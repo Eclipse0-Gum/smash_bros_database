@@ -6,9 +6,11 @@ def get_connection():
     try:
         return mysql.connector.connect(
             host='localhost',
+            port=3306,
             database='smash_players',
             user='root',
             password='password'
+
         )
     except Error as e:
         print(f"Connection error: {e}")
