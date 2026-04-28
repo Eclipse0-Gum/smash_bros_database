@@ -58,3 +58,49 @@ CREATE TABLE scouting_reports (
 ALTER TABLE players 
 ADD CONSTRAINT fk_main_char 
 FOREIGN KEY (main_char_id) REFERENCES characters(char_id) ON DELETE SET NULL;
+
+---------------------------------------------------
+
+Example Data:
+INSERT INTO characters (char_name, weight_class, tier_rank) VALUES 
+('Steve', 'Middle', 'S'),
+('Sonic', 'Middle', 'S'),
+('Aegis', 'Middle', 'S'),
+('Joker', 'Middle', 'S'),
+('Snake', 'Heavy', 'A'),
+('Cloud', 'Middle', 'A'),
+('Game & Watch', 'Light', 'A'),
+('R.O.B.', 'Super Heavy', 'A'),
+('Fox', 'Light', 'A'),
+('Peach', 'Middle', 'A'),
+('Kazuya', 'Super Heavy', 'A'),
+('Mario', 'Middle', 'B'),
+('Donkey Kong', 'Super Heavy', 'C'),
+('Ganondorf', 'Super Heavy', 'F'),
+('Wolf', 'Middle', 'A'); 
+
+INSERT INTO players (tag, region) VALUES 
+('MkLeo', 'Mexico'),
+('Sparg0', 'Mexico'),
+('Sonix', 'Dominican Republic'),
+('Tweek', 'USA'),
+('Miya', 'Japan'),
+('Acola', 'Japan'),
+('Light', 'USA'),
+('Zomba', 'USA'),
+('Riddles', 'Canada'),
+('Glutonny', 'France'),
+('Shuton', 'Japan'),
+('Tea', 'Japan'),
+('Maister', 'Mexico'),
+('Big D', 'Canada'),
+('Skyjay', 'Mexico');
+
+INSERT INTO tournaments (t_name, t_date) VALUES 
+('Genesis X', '2024-02-15'),
+('Super Smash Con', '2024-08-10'),
+('Luminosity Makes Moves', '2024-10-25'),
+('The Big House', '2024-11-05');
+
+INSERT INTO scouting_reports (player_id, habits, weaknesses) 
+SELECT player_id, 'No notes yet', 'No weaknesses recorded' FROM players;
