@@ -148,68 +148,38 @@ def delete_player(conn, p_id):
 def record_match_and_scout(conn, winner_id, loser_id, notes):
     cursor = None
     try:
-        # Ensure we have integers
-        w_id = int(winner_id)
-        l_id = int(loser_id)
+        # Convert inputs to integers immediately
+        w_id, l_id = int(winner_id), int(loser_id)
         
-        # 1. Ask for Tournament ID
-        print("\n--- TOURNAMENT CONTEXT ---")
-        t_id_input = input("Enter Tournament ID (Check Option 8 first!): ")
-        t_id = int(t_id_input) if t_id_input.isdigit() else None
-        
-        if t_id is None:
-            print(" Error: Invalid Tournament ID format.")
-            return
-
         cursor = conn.cursor()
         
-        # --- DIAGNOSTIC CHECK: Do these IDs actually exist? ---
-        cursor.execute("SELECT player_id FROM players WHERE player_id IN (%s, %s)", (w_id, l_id))
-        found_players = [row[0] for row in cursor.fetchall()]
-        
-        if len(found_players) < 2:
-            print(f" DATABASE ERROR: One or both player IDs ({w_id}, {l_id}) do not exist in the 'players' table!")
-            return
-            
-        cursor.execute("SELECT tournament_id FROM tournaments WHERE tournament_id = %s", (t_id,))
-        if not cursor.fetchone():
-            print(f" DATABASE ERROR: Tournament ID {t_id} does not exist in the 'tournaments' table!")
-            return
+        # 1. Get Tournament Context
+        print("\n--- TOURNAMENT SELECTION ---")
+        view_tournaments(conn) # Show them the options
+        t_id = input("Enter Tournament ID: ")
 
-        # 2. Proceed with Transaction
         conn.start_transaction() 
+
+        # 2. Record Match
+        cursor.execute("INSERT INTO matches (tournament_id, winner_id, loser_id) VALUES (%s, %s, %s)", 
+                       (int(t_id), w_id, l_id))
         
-        # Record the Match
-        cursor.execute("""
-            INSERT INTO matches (tournament_id, winner_id, loser_id) 
-            VALUES (%s, %s, %s)
-        """, (t_id, w_id, l_id))
-        
-        # UPSERT the Scouting Report
+        # 3. FORCE Update Scouting Report
+        # This replaces the old record or creates a new one if it's missing
         cursor.execute("""
             INSERT INTO scouting_reports (player_id, weaknesses) 
             VALUES (%s, %s)
-            ON DUPLICATE KEY UPDATE weaknesses = VALUES(weaknesses)
-        """, (l_id, notes))
+            ON DUPLICATE KEY UPDATE weaknesses = %s, last_updated = CURRENT_TIMESTAMP
+        """, (l_id, notes, notes))
 
         conn.commit() 
-        print(f"\n SUCCESS! Database permanently updated.")
-        print(f"   Match recorded at Tournament {t_id}.")
-        print(f"   Scouting Report for Player {l_id} updated to: '{notes}'")
+        print(f"\n SUCCESS: Match recorded. Player {l_id}'s report updated.")
         
-    except mysql.connector.Error as db_err:
-        if conn:
-            conn.rollback()
-        print(f" CRITICAL DATABASE ERROR: {db_err.msg}") 
-    except ValueError:
-        print(" INPUT ERROR: Please use numeric IDs only.")
     except Exception as e:
-        if conn:
-            conn.rollback()
-        print(f" GENERAL ERROR: {e}")
+        if conn: conn.rollback()
+        print(f" ERROR: {e}")
     finally:
-        if cursor:
-            cursor.close()
+        if cursor: cursor.close()
         
 def view_scouting_reports(conn):
     """Shows notes and the date they were last changed"""
@@ -244,72 +214,3 @@ def view_tournaments(conn):
             print(f"{r[0]:<5} {r[1]:<30} {r[2]}")
     except Error as e:
         print(f"Error: {e}")
-
-# ----------------------------------------------------------------------
-# 3. The User Interface
-
-def main():
-    db = get_connection()
-    if not db: return
-
-    while True:
-        print("\n--- SSBU SCOUTING SYSTEM ---")
-        print("1. View Players & Mains") 
-        print("2. View Scouting Reports") 
-        print("3. Add New Player")
-        print("4. Update Existing Player's Main")
-        print("5. Record Match (Transaction)")
-        print("6. Delete Player")
-        print("7. View Character Roster (IDs)") 
-        print("8. View Tournament List")
-        print("9. Exit")
-        
-        choice = input("\nSelect Option: ")
-
-        if choice == '1':
-            data = get_players(db)
-            print(f"\n{'#':<3} {'ID':<5} {'Tag':<15} {'Character [Weight - Tier]':<45} {'Skill':<5}")
-            print("-" * 80)
-            for i, p in enumerate(data, 1): 
-                char_info = p[2] if p[2] else "None"
-                skill = p[3] if p[3] else "N/A"
-                print(f"{i:<3} {p[0]:<5} {p[1]:<15} {char_info:<45} {skill:<5}")
-
-        elif choice == '2':
-            view_scouting_reports(db)
-
-        elif choice == '3':
-            tag = input("Enter Tag: ")
-            reg = input("Enter Region: ")
-            if tag and reg:
-                add_player(db, tag, reg)
-                
-        elif choice == '4':
-            update_player_info(db)
-
-        elif choice == '5':
-            # We only pass 'db' because the function now handles its own inputs
-            # for Winner, Loser, and Tournament IDs.
-            win = input("Winner ID: ")
-            los = input("Loser ID: ")
-            note = input("Scouting Note (Weakness): ")
-            record_match_and_scout(db, win, los, note) # This line is correct, but ensure the function is defined correctly
-
-        elif choice == '6': 
-            pid = input("Player ID to delete: ")
-            if input(f"Confirm delete ID {pid}? (y/n): ").lower() == 'y':
-                delete_player(db, pid)
-
-        elif choice == '7': 
-            list_characters(db)
-            
-        elif choice == '8':
-            view_tournaments(db)
-
-        elif choice == '9': 
-            db.close()
-            print("Database connection closed. Goodbye!")
-            break
-
-if __name__ == "__main__":
-    main()
