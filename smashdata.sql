@@ -31,28 +31,13 @@ INSERT INTO characters (char_name, weight_class, tier_rank) VALUES
 ('Sephiroth', 'Light', 'B'), ('Pyra/Mythra', 'Middle', 'S'), ('Kazuya', 'Super Heavy', 'S'),
 ('Sora', 'Light', 'A');
 
+-- 3. Insert the Player Data from your file
 INSERT INTO players (tag, region) VALUES 
-('MkLeo', 'Mexico'),
-('Sparg0', 'Mexico'),
-('Sonix', 'Dominican Republic'),
-('Tweek', 'USA'),
-('Miya', 'Japan'),
-('Acola', 'Japan'),
-('Light', 'USA'),
-('Zomba', 'USA'),
-('Riddles', 'Canada'),
-('Glutonny', 'France'),
-('Shuton', 'Japan'),
-('Tea', 'Japan'),
-('Maister', 'Mexico'),
-('Big D', 'Canada'),
-('Skyjay', 'Mexico');
-
-INSERT INTO tournaments (t_name, t_date) VALUES 
-('Genesis X', '2024-02-15'),
-('Super Smash Con', '2024-08-10'),
-('Luminosity Makes Moves', '2024-10-25'),
-('The Big House', '2024-11-05');
+('MkLeo', 'Mexico'), ('Sparg0', 'Mexico'), ('Sonix', 'Dominican Republic'),
+('Tweek', 'USA'), ('Miya', 'Japan'), ('Acola', 'Japan'),
+('Light', 'USA'), ('Zomba', 'USA'), ('Riddles', 'Canada'),
+('Glutonny', 'France'), ('Shuton', 'Japan'), ('Tea', 'Japan'),
+('Maister', 'Mexico'), ('Big D', 'Canada'), ('Skyjay', 'Mexico');
 
 ---------------------------- To update scouting reports for all players with default values, we can use the following SQL statement:
 INSERT INTO scouting_reports (player_id, habits, weaknesses) 

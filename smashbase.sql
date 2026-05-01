@@ -1,43 +1,42 @@
+CREATE DATABASE smash_players;
+USE smash_players;
+
+-- 1. Characters Table
 CREATE TABLE characters (
     char_id INT PRIMARY KEY AUTO_INCREMENT,
     char_name VARCHAR(50) NOT NULL UNIQUE,
-    weight_class ENUM('Very Light','Light', 'Middle', 'Heavy', 'Super Heavy'),
-    tier_rank CHAR(2) CHECK (tier_rank IN ('SS','S', 'A', 'B', 'C', 'D', 'F'))
+    weight_class VARCHAR(20),
+    tier_rank CHAR(2)
 );
 
-CREATE TABLE tournaments (
-    tournament_id INT PRIMARY KEY AUTO_INCREMENT,
-    t_name VARCHAR(100) NOT NULL,
-    t_date DATE DEFAULT (CURRENT_DATE)
-);
-
+-- 2. Players Table
 CREATE TABLE players (
     player_id INT PRIMARY KEY AUTO_INCREMENT,
     tag VARCHAR(50) NOT NULL UNIQUE,
-    region VARCHAR(50),
-    main_char_id INT NULL,
-    FOREIGN KEY (main_char_id) REFERENCES characters(char_id) ON DELETE SET NULL
+    region VARCHAR(50)
 );
 
+-- 3. Player Character Links (The "Mains")
 CREATE TABLE player_characters (
     player_id INT,
     char_id INT,
-    proficiency_level INT DEFAULT 1 CHECK (proficiency_level BETWEEN 1 AND 10),
+    proficiency_level INT DEFAULT 1,
     PRIMARY KEY (player_id, char_id),
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (char_id) REFERENCES characters(char_id) ON DELETE CASCADE
 );
 
+-- 4. Matches Table (Simplified: No Tournament Required)
 CREATE TABLE matches (
     match_id INT PRIMARY KEY AUTO_INCREMENT,
-    tournament_id INT,
     winner_id INT,
     loser_id INT,
-    FOREIGN KEY (tournament_id) REFERENCES tournaments(tournament_id) ON DELETE SET NULL,
+    match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (winner_id) REFERENCES players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (loser_id) REFERENCES players(player_id) ON DELETE CASCADE
 );
 
+-- 5. Scouting Reports Table
 CREATE TABLE scouting_reports (
     report_id INT PRIMARY KEY AUTO_INCREMENT,
     player_id INT UNIQUE,
