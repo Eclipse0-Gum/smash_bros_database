@@ -16,7 +16,7 @@ CREATE TABLE players (
     region VARCHAR(50)
 );
 
--- 3. Player Character Links (The "Mains")
+-- 3. Player Character Links
 CREATE TABLE player_characters (
     player_id INT,
     char_id INT,
@@ -26,7 +26,7 @@ CREATE TABLE player_characters (
     FOREIGN KEY (char_id) REFERENCES characters(char_id) ON DELETE CASCADE
 );
 
--- 4. Matches Table (Simplified: No Tournament Required)
+-- 4. Matches Table
 CREATE TABLE matches (
     match_id INT PRIMARY KEY AUTO_INCREMENT,
     winner_id INT,

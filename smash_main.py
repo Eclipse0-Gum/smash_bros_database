@@ -1,7 +1,7 @@
 import smash_database as db
 
 def main():
-    conn = db.get_connection()  # We call the variable 'conn'
+    conn = db.get_connection()  
     if not conn: return
 
     while True:
@@ -41,12 +41,11 @@ def main():
             w = input("Winner ID: ")
             l = input("Loser ID: ")
             n = input("Note: ")
-            # Ensure 'conn' is the first argument!
             db.record_match_and_scout(conn, w, l, n)
         elif choice == '4':
             db.view_players(conn)
         elif choice == '5':
-            db.view_reports(conn) # Ensure this matches the name in smash_database.py
+            db.view_reports(conn)
         elif choice == '6':
             conn.close()
             break

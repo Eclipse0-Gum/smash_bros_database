@@ -31,7 +31,7 @@ INSERT INTO characters (char_name, weight_class, tier_rank) VALUES
 ('Sephiroth', 'Light', 'B'), ('Pyra/Mythra', 'Middle', 'S'), ('Kazuya', 'Super Heavy', 'S'),
 ('Sora', 'Light', 'A');
 
--- 3. Insert the Player Data from your file
+---------------------------- To insert example player data, we can use the following SQL statement:
 INSERT INTO players (tag, region) VALUES 
 ('MkLeo', 'Mexico'), ('Sparg0', 'Mexico'), ('Sonix', 'Dominican Republic'),
 ('Tweek', 'USA'), ('Miya', 'Japan'), ('Acola', 'Japan'),

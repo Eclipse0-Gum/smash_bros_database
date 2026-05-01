@@ -15,9 +15,9 @@ def add_player(conn, tag, region):
     try:
         cursor.execute("INSERT INTO players (tag, region) VALUES (%s, %s)", (tag, region))
         conn.commit()
-        print(f"✅ Player '{tag}' created!")
+        print(f" Player '{tag}' created!")
     except Error as e:
-        print(f"❌ Error: {e}")
+        print(f" Error: {e}")
     finally:
         cursor.close()
 
@@ -44,7 +44,7 @@ def delete_main(conn, p_id, c_id):
         cursor = conn.cursor()
         conn.start_transaction()
         
-        # We only delete the link between this player and this specific character
+        # Deletes the link between player and specific character
         query = "DELETE FROM player_characters WHERE player_id = %s AND char_id = %s"
         cursor.execute(query, (int(p_id), int(c_id)))
         
@@ -60,7 +60,7 @@ def delete_main(conn, p_id, c_id):
 def record_match_and_scout(conn, winner_id, loser_id, notes):
     cursor = None
     try:
-        # FORCE RESET: This clears the "Transaction in progress" flag manually
+        # FORCE RESET
         if conn.in_transaction:
             conn.rollback()
             
@@ -68,8 +68,7 @@ def record_match_and_scout(conn, winner_id, loser_id, notes):
         cursor = conn.cursor()
         conn.start_transaction()
         
-        # 1. Force a rollback BEFORE starting
-        # This resets the internal Python "Transaction in Progress" flag
+        # Force a rollback BEFORE starting the transaction to clear any ghost transactions that might be lingering from previous operations.
         try:
             conn.rollback()
         except:
@@ -77,10 +76,10 @@ def record_match_and_scout(conn, winner_id, loser_id, notes):
 
         conn.start_transaction() 
 
-        # 2. Record the match
+        # Record the match
         cursor.execute("INSERT INTO matches (winner_id, loser_id) VALUES (%s, %s)", (w_id, l_id))
 
-        # 3. Update the scouting report (UPSERT)
+        # Update the scouting report 
         sql = """
             INSERT INTO scouting_reports (player_id, weaknesses) 
             VALUES (%s, %s) 
@@ -92,7 +91,7 @@ def record_match_and_scout(conn, winner_id, loser_id, notes):
 
         conn.commit()
     except Exception as e:
-        if conn: conn.rollback() # Emergency exit
+        if conn: conn.rollback() # Emergency exit in case something goes wrong
         print(f" Error: {e}")
     finally:
         if cursor: cursor.close()
@@ -128,12 +127,12 @@ def list_characters(conn):
     """Lists all characters and their IDs in order for easy reference."""
     cursor = conn.cursor()
     try:
-        # We sort by ID so you can easily find the number you need
+        # Sort by ID to easily find the number you need
         cursor.execute("SELECT char_id, char_name FROM characters ORDER BY char_id ASC")
         rows = cursor.fetchall()
         
         print("\n--- CHARACTER REFERENCE LIST ---")
-        # This loop prints 3 characters per line to keep the screen clean
+        # Loop prints 3 characters per line to keep the screen clean
         for i in range(0, len(rows), 3):
             chunk = rows[i:i+3]
             line = ""
@@ -149,8 +148,7 @@ def list_characters(conn):
 def view_reports(conn):
     cursor = conn.cursor()
     try:
-        # LEFT JOIN ensures that even if a player is missing a tag, 
-        # the scouting note still shows up.
+        # LEFT JOIN makes sure that even if player is missing a tag, the scouting note still shows up.
         query = """
             SELECT p.tag, s.weaknesses, s.last_updated 
             FROM scouting_reports s 
@@ -178,7 +176,7 @@ def view_reports(conn):
 def delete_player(conn, player_id):
     cursor = None
     try:
-        # FORCE RESET: Same thing here, clear any ghost transactions
+        # FORCE RESET
         if conn.in_transaction:
             conn.rollback()
 
@@ -187,16 +185,16 @@ def delete_player(conn, player_id):
         conn.start_transaction()
 
 
-        # 1. Delete associated scouting reports first (to avoid Foreign Key errors)
+        # Deletes scouting reports first to avoid Foreign Key errors
         cursor.execute("DELETE FROM scouting_reports WHERE player_id = %s", (p_id,))
         
-        # 2. Delete associated match records where they were winner OR loser
+        # Delete match records where the player is either winner or loser 
         cursor.execute("DELETE FROM matches WHERE winner_id = %s OR loser_id = %s", (p_id, p_id))
         
-        # 3. Delete from player_characters (mains)
+        # Delete from player_characters 
         cursor.execute("DELETE FROM player_characters WHERE player_id = %s", (p_id,))
 
-        # 4. Finally, delete the player
+        # Finally, delete the player
         cursor.execute("DELETE FROM players WHERE player_id = %s", (p_id,))
 
         conn.commit()
@@ -212,7 +210,7 @@ def get_player_insight(conn, player_id):
         p_id = int(player_id)
         cursor = conn.cursor()
         
-        # Query 1: Get Win/Loss Stats
+        # Query gets Win/Loss Stats
         stats_query = """
             SELECT 
                 (SELECT COUNT(*) FROM matches WHERE winner_id = %s) as wins,
@@ -221,7 +219,7 @@ def get_player_insight(conn, player_id):
         cursor.execute(stats_query, (p_id, p_id))
         stats = cursor.fetchone()
 
-        # Query 2: Get the specific scouting report
+        # Query 2:Gets the specific scouting report
         report_query = "SELECT tag, weaknesses FROM players LEFT JOIN scouting_reports ON players.player_id = scouting_reports.player_id WHERE players.player_id = %s"
         cursor.execute(report_query, (p_id,))
         report = cursor.fetchone()
