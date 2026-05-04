@@ -15,7 +15,7 @@ def add_player(conn, tag, region):
     try:
         cursor.execute("INSERT INTO players (tag, region) VALUES (%s, %s)", (tag, region))
         conn.commit()
-        print(f" Player '{tag}' created!")
+        print(f" Player '{tag}' created")
     except Error as e:
         print(f" Error: {e}")
     finally:
@@ -29,7 +29,7 @@ def update_mains(conn, p_id, c_id, level):
                  ON DUPLICATE KEY UPDATE proficiency_level = VALUES(proficiency_level)"""
         cursor.execute(sql, (p_id, c_id, level))
         conn.commit()
-        print(f" Main character updated for Player ID {p_id}!")
+        print(f" Main character updated for Player ID {p_id}")
     except Error as e:
         print(f" Error: {e}")
     finally:
@@ -68,7 +68,7 @@ def record_match_and_scout(conn, winner_id, loser_id, notes):
         cursor = conn.cursor()
         conn.start_transaction()
         
-        # Force a rollback BEFORE starting the transaction to clear any ghost transactions that might be lingering from previous operations.
+        # Force a rollback BEFORE starting the transaction to clear any ghost transactions that might be lingering from previous operations. A problem I ran into during testing was that if a transaction was left open (like from a failed update), it would block the next transaction from starting properly.
         try:
             conn.rollback()
         except:
@@ -159,8 +159,8 @@ def view_reports(conn):
         reports = cursor.fetchall()
         
         if not reports:
-            print("\n[!] The scouting table is currently empty.")
-            print("Try recording a match (Option 3) first!")
+            print("\nThe scouting table is currently empty.")
+            print("Try recording a match (Option 3) first")
             return
 
         print(f"\n{'Player Tag':<15} {'Scouting Note':<35} {'Last Updated'}")
@@ -219,17 +219,17 @@ def get_player_insight(conn, player_id):
         cursor.execute(stats_query, (p_id, p_id))
         stats = cursor.fetchone()
 
-        # Query 2:Gets the specific scouting report
+        # Gets the specific scouting report
         report_query = "SELECT tag, weaknesses FROM players LEFT JOIN scouting_reports ON players.player_id = scouting_reports.player_id WHERE players.player_id = %s"
         cursor.execute(report_query, (p_id,))
         report = cursor.fetchone()
 
         if report:
-            print(f"\n--- INSIGHTS FOR: {report[0]} ---")
+            print(f"\n INSIGHTS FOR: {report[0]} ---")
             print(f"Record: {stats[0]}W - {stats[1]}L")
             print(f"Scouting Notes: {report[1] if report[1] else 'No notes recorded yet.'}")
         else:
-            print("\n[!] Player not found.")
+            print("\n Player not found.")
 
     except Exception as e:
         print(f" Insight Error: {e}")
